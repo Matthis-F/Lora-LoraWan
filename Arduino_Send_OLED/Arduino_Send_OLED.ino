@@ -32,29 +32,47 @@ void setup() {
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);
+  display.println("<-- Send A");
+  display.setCursor(0,20);
+  display.println("<-- Send B");
   display.display();
-  display.println("Send Ping -> A");
-  
   
   
   Serial.println("Device successfully configured");
   
 }
 void loop() {
-    
-    //sx1272.CarrierSense();//Show debug infos about wireless communication status
+    display.setCursor(0,0);
     sx1272.setPacketType(PKT_TYPE_DATA);//Setting the type of the packet to send here we are sending 
     //DATA so PTK_TYPE_DATE seems appropriate PKT_TYPE8ACK is used for an ACK
     uint8_t r_size;//declare variable r_size 
     int e; //declare variable e
     uint8_t message[100];//declare ariable message
-    r_size = sprintf((char*)message, "Ping");
+    
     
 
     if(!digitalRead(BUTTON_A)){
+    //reset display
+    display.clearDisplay();
+    display.setCursor(0,20);
+    
+    r_size = sprintf((char*)message, "Boutton A");
     Serial.println(e);
-    e = sx1272.sendPacketTimeout(2, message, r_size);//Sendinf the Packet
-    display.println("Ping Sent");
+    e = sx1272.sendPacketTimeout(2, message, r_size);//Send the Packet
+    display.println("Packet Sent !");
     }
-  
+
+    if(!digitalRead(BUTTON_B)){
+    //reset display
+    display.clearDisplay();
+    display.setCursor(0,20);
+    
+    r_size = sprintf((char*)message, "Boutton B");
+    Serial.println(e);
+    e = sx1272.sendPacketTimeout(2, message, r_size);//Send the Packet
+    display.println("Packet Sent !");
+    }
+    
+    display.display();
+    
 }
