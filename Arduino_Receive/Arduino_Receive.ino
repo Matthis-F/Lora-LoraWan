@@ -2,7 +2,7 @@
 #include <SX1272.h>
 #include <SPI.h>
 #include <Wire.h>
-
+int e;
 
 
 
@@ -23,38 +23,35 @@ void setup() {
 }
 void loop() {
 
-  int e;
+  
   String data;
   
   e = sx1272.receivePacketTimeout(10000);//Open a 10s time window
   
-
-  switch (e) {
-
-    case 0:
-
+ if( e == 0 ){
+      String data;
+      int packet_nb = sx1272.packet_received.packnum;
       int packet_length = sx1272.packet_received.length;//return legth of received packet
       Serial.println("Incoming Packet");
-
+  
       for (unsigned int i = 0; i < (packet_length)-1 ; i++)//Used to read payload data (returned as char array) and put it into a String
       {
         data = data + ((char)sx1272.packet_received.data[i]);
       }
       Serial.print("Payload of packet :");
       Serial.println(data);//prints payload
-      
-      break;
+      Serial.print("Packet nubmer :");
+      Serial.println(packet_nb);
 
- 
-
-    case 3:
+  }
+  else if( e == 3 ){
       Serial.println("No packet received during time window");
-      break;
-    default:
+
+  }
+ 
+   else{
       char msg_error;
       sprintf(msg_error,"An error occured, error code:%d",e);
       Serial.println(msg_error);
-      
-
-  }  
+   }
 }
