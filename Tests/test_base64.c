@@ -1,0 +1,11 @@
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include "../libraries/Base64.c"
+
+int main(void){
+  uint8_t encodedData[1024];
+  uint8_t data[] = {0x40, 0xE7, 0x12, 0x01, 0x26, 0x00, 0x00, 0x00, 0x01, 0x14, 0xD9, 0xEB, 0x72, 0xA1, 0x20, 0x9C, 0x3B, 0xD2};
+  base64_encode(encodedData,data,sizeof(data));
+  printf("\n%s\n",encodedData);
+}

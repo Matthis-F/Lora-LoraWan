@@ -25,11 +25,8 @@ int main(void){
 		memcpy(frm.DevAddr,DevAddr1,4);
 		memcpy(frm.AppSKey,AppSKey1,16);
 		memcpy(frm.data,data,strlen(data));
-		int complete_pkt_len = buildLoraMacPkt(frm,pkt);
-		for (size_t i = 0; i < complete_pkt_len; i++) {
-			printf("%X ",pkt[i]);
-		}
-		printf("\nMIC : %X %X %X %X\n",pkt[complete_pkt_len-4],pkt[complete_pkt_len-3],pkt[complete_pkt_len-2],pkt[complete_pkt_len-1]);
+		int complete_pkt_len = buildLoraWanPkt(frm,pkt);
+		printf("%s",pkt);
 
 
 
