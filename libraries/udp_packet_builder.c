@@ -15,7 +15,6 @@ struct time{
   char time_formatted[100];
 };
 
-
 struct time get_time(){
     struct time t;
     time_t now = time (NULL); //This put the value of th unix timestamp into the variable now
@@ -26,7 +25,7 @@ struct time get_time(){
 
 
 struct message build_udp_packet(int data_type,uint8_t *loraWanPkt){
-	
+
 	char payload[2048];
 
 	//generating random tokens//
@@ -40,7 +39,7 @@ struct message build_udp_packet(int data_type,uint8_t *loraWanPkt){
 	//It can be either a stat update (just sending some stats about the GW) or an rxpk (an uplink message forwarding DATA from one node)//
   if (data_type == 0){
 
-    sprintf(payload,"{\"rxpk\": [{\"stat\": 1, \"chan\": 0, \"datr\": \"SF12BW125\", \"tmst\": %d, \"codr\": \"4/5\", \"lsnr\": 8, \"freq\": 868.1, \"data\": \"%s\", \"size\": 5, \"modu\": \"LORA\", \"rfch\": 0, \"time\": \"%s\", \"rssi\": -45}]}",(int)time(NULL),loraWanPkt,t.time_formatted);
+    sprintf(payload,"{\"rxpk\": [{\"stat\": 1, \"chan\": 0, \"datr\": \"SF12BW125\", \"tmst\": %d, \"codr\": \"4/5\", \"lsnr\": 8, \"freq\": 868.1, \"data\": \"%s\", \"size\": %lu, \"modu\": \"LORA\", \"rfch\": 0, \"time\": \"%s\", \"rssi\": -45}]}",(int)time(NULL),loraWanPkt,sizeof(loraWanPkt),t.time_formatted);
 		}
   else if (data_type == 1){
     strcpy(payload,"{\"stat\":{\"time\":\"2020-01-07 15:30:01 GMT\",\"lati\":0.0,\"long\":0.0,\"alti\":10,\"rxnb\":0,\"rxok\":0,\"rxfw\":852,\"ackr\":0.0,\"dwnb\":0,\"txnb\":0,\"pfrm\":\"SC Gateway\",\"mail\":\"contact@whatever.com\",\"desc\":\"Single Channel GW\"}}");

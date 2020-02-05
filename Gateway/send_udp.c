@@ -6,9 +6,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define PORT 1700
+#define PORT 80
 
-void sendUDP(uint8_t *udp_packet,int len){
+void sendUDP(char *udp_packet,int len){
 
 	struct sockaddr_in serv_addr;
 
@@ -38,7 +38,9 @@ void sendUDP(uint8_t *udp_packet,int len){
 	send(sock,udp_packet,len,0);
 	usleep(10000);
 	printf("Gateway message sent\n");
+	while(1){
 	valread = read( sock , buffer, 1024);
 	for(i=0;i<valread;i++) { printf("%02x ", buffer[i]); }
 	printf("\n");
+}
 }
