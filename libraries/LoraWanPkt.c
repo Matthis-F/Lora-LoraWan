@@ -144,6 +144,8 @@ uint8_t micPacket(uint8_t *data, uint8_t len, uint16_t FrameCount, uint8_t * Nwk
 	for (uint8_t i=0; i<16; i++) micBuf[i]=Block_B[i];
 	for (uint8_t i=0; i<len; i++) micBuf[i+16]=data[i];
 
+
+
 	// ------------------------------------
 	// Step 2: Calculate the number of blocks for CMAC
 	//
@@ -199,6 +201,7 @@ uint8_t micPacket(uint8_t *data, uint8_t len, uint16_t FrameCount, uint8_t * Nwk
 	// Only 4 bytes are returned (32 bits), which is less than the RFC recommends.
 	// We return by appending 4 bytes to data, so there must be space in data array.
 	//
+
 	data[len+0]=Y[0];
 	data[len+1]=Y[1];
 	data[len+2]=Y[2];
@@ -258,8 +261,9 @@ uint8_t encodePacket(uint8_t *Data, uint8_t encryptedDataLength, uint16_t FrameC
 //This function build the packet according to the LoraWan specification (MIC not included)
 //The 9 first bytes are the MacHeader (MDRH)
 //Then the encrypted data is added to the frame
-void buildPacket(int size,uint8_t *Data,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t *DevAddr,uint16_t FrameCount){
+void buildPacket(int size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t *DevAddr,uint16_t FrameCount){
 
+	memcpy(Payload+9,Payload,size);
 	Payload[0]= 0x40;//Message Type : 0x40 Unconfirmed data UP use 0x80 for Confirmed data UP
 	//for more information see LoraWan Speficication chapter 4.2.1
 
@@ -276,39 +280,45 @@ void buildPacket(int size,uint8_t *Data,uint8_t *Payload, uint8_t encryptedDataL
 	Payload[7]=(FrameCount>>8)&0x00FF;
 
 	Payload[8]=0x01;//Fport value
-
-	//Now we're adding the payload (encrypted data)
-	for (size_t i = 0; i <= size; i++) {
-		Payload[i+9] = Data[i];
+	printf("[LoraWanPkt : buildPacket] ");
+	for (size_t i = 0; i < size+9; i++) {
+		printf("%X ",Payload[i]);
 	}
+	printf("\n");
 
 }
 
-//This function build the ENTIRE LoraWan Packet (Mac Header)+(Encrypted Payload)+(MIC)
+//This function build the ENTIRE LoraWan Packet :
+//(Mac Header)+(Encrypted Payload)+(MIC)
+
 //Parameters:
 //[IN] struct Upframe containing :
 
-//DevAddr[4];						An array of 4 bytes containing the address of the end node, the app
-//											server need to know this address
+//DevAddr[4] An array of 4 bytes containing the address of the end node, the app
+//           server need to know this address
 
-//data[] 								An array of bytes with the data payload inside the LoraPacket
+//data[]     An array of bytes with the data payload inside the LoraPacket
 
-//len 									An integer with the length of the data payload
+//len        An integer with the length of the data payload
 
-//FrameCount						A 16-bit framecounter
+//FrameCount A 16-bit framecounter
 
-//NwkSKey[16]						The Network Server Key used to compute Message Integrity Code (MIC)
-//											Note that the MIC is used for the Authentification with the
-//											Network Server both the Network server and the need to know this key
+//NwkSKey[16]	The Network Server Key used to compute Message Integrity Code
+//						(MIC) Note that the MIC is used for the Authentification with the
+//					  Network Server both the Network server and the need
+//            to know this key
 
-//AppSKey[16]				 		The App Server Key used to encrypt the data payload, the payload will
-//											be decrypted by the App Server both the App Server and the end encode
-//											need to know this key.
+//AppSKey[16]	The App Server Key used to encrypt the data payload, the payload
+//            will be decrypted by the App Server both the App Server and the
+//             end encode need to know this key.
 
-//dir										The direction of the frame, should always be 0 if uplink (Node -> Srv)
+//dir         The direction of the frame, should always be 0 if uplink
+//            (Node -> Srv)
 
 
-//[OUT] encodedData 		An array containing the complete LoraWan message builded by this Functions
+//[OUT] encodedData :
+//An array containing the complete LoraWan message builded by this Functions
+
 
 //here's a complete LoraWan Packet:
 //|																						 LoraWan Packet																	 				|
@@ -320,20 +330,20 @@ int buildLoraWanPkt(struct UpFrame param, uint8_t *encodedData){
 
 
 	//this function encode the raw data with the AppSKey
-	uint8_t encryptedDataLength = encodePacket(param.data,param.len,param.FrameCount,param.DevAddr,param.AppSKey,param.dir);
+	uint8_t encryptedDataLength = encodePacket(param.data,param.len,param.FrameCount,(uint8_t*)param.DevAddr,param.AppSKey,param.dir);
 
 
 	//this function builds the full LoraWan packet except the MIC
-	buildPacket(sizeof(param.data),param.data,Frame,encryptedDataLength,param.DevAddr,param.FrameCount);
+	buildPacket(strlen((char*)param.data),param.data,encryptedDataLength,(uint8_t*)param.DevAddr,param.FrameCount);
 
 
 	//this function computes the MIC and adds it to the Frame
 	//MIC stands for Message Message Integrity Code it enables authentification of the end device
 
-	micPacket((uint8_t *)Frame,encryptedDataLength+9,param.FrameCount, param.NwkSKey,param.dir,param.DevAddr);
+	micPacket((uint8_t *)param.data,encryptedDataLength+9,param.FrameCount, param.NwkSKey,param.dir,param.DevAddr);
 
 	//Now we need to encode the packet (base64)
-	base64_encode(encodedData,Frame,encryptedDataLength+13);
+	base64_encode(encodedData,(char*)param.data,encryptedDataLength+13);
 
 	 //Returning the length of the complete packet
 	 return sizeof(encodedData);
