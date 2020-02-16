@@ -11,25 +11,22 @@ int main(void){
 		uint8_t dir1 = 0;
 		uint8_t data[251];
 		uint8_t pkt[300];
-		scanf("%s",&data);
 
-		for(int i=0 ; i<strlen(data); i++){
-			printf("%X ",data[i]);
-		}
-		uint8_t len = strlen(data);
-		struct UpFrame frm;
+		scanf("%s",(char*)&data);
+
+		struct LoraWan param;
 
 
-		memcpy(frm.NwkSKey,NwkSKey1,16);
-		frm.FrameCount = FrameCount1;
-		frm.dir = dir1;
-		frm.len = len;
-		memcpy(frm.DevAddr,DevAddr1,4);
-		memcpy(frm.DevAddr,DevAddr1,4);
-		memcpy(frm.AppSKey,AppSKey1,16);
-		memcpy(frm.data,data,strlen(data));
-		int complete_pkt_len = buildLoraWanPkt(frm,pkt);
-		printf("%s\n",pkt);
+		memcpy(param.NwkSKey,NwkSKey1,16);
+		param.FrameCount = FrameCount1;
+		param.dir = dir1;
+		memcpy(param.DevAddr,DevAddr1,4);
+		memcpy(param.DevAddr,DevAddr1,4);
+		memcpy(param.AppSKey,AppSKey1,16);
+
+		int complete_pkt_len = buildLoraWanPkt(param,data,pkt);
+
+		printf("[test_LoraWanPkt]:Final Packet %s\n",pkt);
 
 
 

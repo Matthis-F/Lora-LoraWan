@@ -1,4 +1,5 @@
 #!/bin/bash
 gcc test_LoraWanPkt.c ../libraries/AES-128_V10.c ../libraries/Base64.c ../libraries/LoraWanPkt.c -o test_LoraWanPkt
 gcc test_gw.c ../libraries/AES-128_V10.c ../libraries/Base64.c ../libraries/LoraWanPkt.c -o test_gw
+gcc test_base64.c ../libraries/Base64.c  -o test_base64
 
