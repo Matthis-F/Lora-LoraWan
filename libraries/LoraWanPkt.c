@@ -5,8 +5,16 @@
 #include "Base64.h"
 #include "LoraWanPkt.h"
 
-//Functions mXor, generate_subkey, shift_left and mic_packet were made by Maarten Westenberg, please check:
+#define MAC_HEADER_LENGTH 9
+#define MIC_LEGHTH 4
+//#define DEBUG //uncomment this for debug informations
+
+//Functions mXor, generate_subkey, shift_left and mic_packet were made by
+//Maarten Westenberg, for more info please check:
 //https://github.com/things4u/ESP-1ch-Gateway-v5.0/blob/master/ESP-sc-gway/_sensor.ino
+//Functions buildHeader and buildLoraWanPkt give implementation of these
+//functions, The LoraWan packet is build according to the
+//LoRaWAN® Specification v1.0.3
 
 
 // ----------------------------------------------------------------------------
@@ -261,9 +269,9 @@ uint8_t encodePacket(uint8_t *Data, uint8_t encryptedDataLength, uint16_t FrameC
 //This function build the packet according to the LoraWan specification (MIC not included)
 //The 9 first bytes are the MacHeader (MDRH)
 //Then the encrypted data is added to the frame
-void buildPacket(int size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t *DevAddr,uint16_t FrameCount){
+void buildHeader(uint8_t size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t *DevAddr,uint16_t FrameCount){
 
-	memcpy(Payload+9,Payload,size);
+	memcpy(Payload+MAC_HEADER_LENGTH,Payload,size);
 	Payload[0]= 0x40;//Message Type : 0x40 Unconfirmed data UP use 0x80 for Confirmed data UP
 	//for more information see LoraWan Speficication chapter 4.2.1
 
@@ -280,28 +288,22 @@ void buildPacket(int size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t 
 	Payload[7]=(FrameCount>>8)&0x00FF;
 
 	Payload[8]=0x01;//Fport value
-	printf("[LoraWanPkt : buildPacket] ");
-	for (size_t i = 0; i < size+9; i++) {
-		printf("%X ",Payload[i]);
-	}
-	printf("\n");
+
 
 }
 
+
+//----------------------------------------------------------------------------//
 //This function build the ENTIRE LoraWan Packet :
 //(Mac Header)+(Encrypted Payload)+(MIC)
 
 //Parameters:
-//[IN] struct Upframe containing :
+//[IN] struct LoraWan containing :
 
-//DevAddr[4] An array of 4 bytes containing the address of the end node, the app
+//DevAddr[4] An array of 4 Bytes containing the address of the end node, the app
 //           server need to know this address
 
-//data[]     An array of bytes with the data payload inside the LoraPacket
-
-//len        An integer with the length of the data payload
-
-//FrameCount A 16-bit framecounter
+//FrameCount A 16-bits long framecounter
 
 //NwkSKey[16]	The Network Server Key used to compute Message Integrity Code
 //						(MIC) Note that the MIC is used for the Authentification with the
@@ -315,9 +317,14 @@ void buildPacket(int size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t 
 //dir         The direction of the frame, should always be 0 if uplink
 //            (Node -> Srv)
 
+//[IN] data_in :
+//A buffer containing the raw data (string) that needs to be encrypted
+//Due to RAM optimisation, all length variable are unsigned 8 Bytes long int
+//This means  that the maximum size of the buffer is 242 Bytes
+//(255-(Size of header+Mic) Which should be plenty enough for a radio message.
 
-//[OUT] encodedData :
-//An array containing the complete LoraWan message builded by this Functions
+//[OUT] data_out :
+//A buffer containing the complete LoraWan encrypted message
 
 
 //here's a complete LoraWan Packet:
@@ -326,26 +333,84 @@ void buildPacket(int size,uint8_t *Payload, uint8_t encryptedDataLength,uint8_t 
 //					 |											   Frame Header   	 								  |FPORT |  FRMPayload  |
 //					 |DevAddr[4] | FCtrl[1] | FrameCount[4] |  FrameOPtions[0-15] |
 
-int buildLoraWanPkt(struct UpFrame param, uint8_t *encodedData){
+uint8_t buildLoraWanPkt(struct LoraWan param,uint8_t *data_in,uint8_t *data_out){
+//----------------------------------------------------------------------------//
 
 
-	//this function encode the raw data with the AppSKey
-	uint8_t encryptedDataLength = encodePacket(param.data,param.len,param.FrameCount,(uint8_t*)param.DevAddr,param.AppSKey,param.dir);
+//----------------------------------------------------------------------------//
+	//To use debugging please uncomment "#define DEBUG" at the top of this file
+#ifdef DEBUG
+	printf("[LoraWanPkt] Raw Data : ");
+	for (uint8_t i = 0; i < strlen((char*)data_in) ; i++) {
+		printf("%X ",data_in[i]);
+	}
+	printf("\n");
+#endif
+//----------------------------------------------------------------------------//
 
 
-	//this function builds the full LoraWan packet except the MIC
-	buildPacket(strlen((char*)param.data),param.data,encryptedDataLength,(uint8_t*)param.DevAddr,param.FrameCount);
+
+//----------------------------------------------------------------------------//
+	//Step 1:
+	//We need to encode the data with the Network Server Key, once done this will
+	//be the payload of the LoraWan Packet
+	uint8_t encryptedDataLength = encodePacket(data_in,strlen((char*)data_in),param.FrameCount,param.DevAddr,param.AppSKey,param.dir);
 
 
-	//this function computes the MIC and adds it to the Frame
-	//MIC stands for Message Message Integrity Code it enables authentification of the end device
+#ifdef DEBUG
+	printf("[LoraWanPkt] Encrypted with AppSKey : ");
+	for (uint8_t i = 0; i < encryptedDataLength ; i++) {
+		printf("%X ",data_in[i]);
+	}
+	printf("\n");
+#endif
+//----------------------------------------------------------------------------//
 
-	micPacket((uint8_t *)param.data,encryptedDataLength+9,param.FrameCount, param.NwkSKey,param.dir,param.DevAddr);
 
+//----------------------------------------------------------------------------//
+	//Step 2:
+	//We need to add the LoraMac Header before the payload of the packet
+	buildHeader((uint8_t)strlen((char*)data_in),data_in,encryptedDataLength,param.DevAddr,param.FrameCount);
+
+
+#ifdef DEBUG
+	printf("[LoraWanPkt] With Header Added : ");
+	for (uint8_t i = 0; i < encryptedDataLength+MAC_HEADER_LENGTH ; i++) {
+		printf("%X ",data_in[i]);
+	}
+	printf("\n");
+#endif
+//----------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------//
+	//Step 3:
+	//We need to compute the MIC of the packet, this is dony by encrypting the
+	//Header+Payload with the Network Server Key MIC stands for
+	//Message Message Integrity Code it enables authentification of the packet
+	//with the remote server. Note that only the 4 first byte of the encrypted
+	//data are used.
+
+	micPacket((uint8_t *)data_in,encryptedDataLength+MAC_HEADER_LENGTH,param.FrameCount, param.NwkSKey,param.dir,(char*)param.DevAddr);
+
+
+#ifdef DEBUG
+	printf("[LoraWanPkt] With Mic Added : ");
+	for (uint8_t i = 0; i < encryptedDataLength+MAC_HEADER_LENGTH+MIC_LEGHTH ; i++) {
+		printf("%X ",data_in[i]);
+	}
+	printf("\n");
+#endif
+//----------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------//
+	//Step 4:
 	//Now we need to encode the packet (base64)
-	base64_encode(encodedData,(char*)param.data,encryptedDataLength+13);
+	base64_encode((char*)data_out,(char*)data_in,encryptedDataLength+MAC_HEADER_LENGTH+MIC_LEGHTH);
+//----------------------------------------------------------------------------//
 
 	 //Returning the length of the complete packet
-	 return sizeof(encodedData);
+	 return sizeof(data_out);
 
 }
