@@ -5,29 +5,27 @@
 #include <Wire.h>
 
 //----------------------------------------------------------------------------//
-  //Our RFM95 definition :
+
+//Our RFM95 definition :
 #define RFM95_CS 8 //Chip select radio pin
 #define RFM95_RST 4 //Reset radio pin
 #define RFM95_INT 7 //GPIO/IRQ radio pin
-//----------------------------------------------------------------------------//
 
+//----------------------------------------------------------------------------//
 
 #define RF95_FREQ 868.1 //Match EU regulations
 
 //----------------------------------------------------------------------------//
+
 //Node address definition :
 #define CLIENT_ADDRESS 100
 #define ROUTER_ADDRESS 10
 #define GATEWAY_ADDRESS 1
+
 //----------------------------------------------------------------------------//
 
-#define RH_HAVE_SERIAL
-
-
 RH_RF95 rf95(RFM95_CS, RFM95_INT);//Creating an instance of the RF95 Manager
-RHRouter manager_routing(rf95, CLIENT_ADDRESS); //Creating an instance of the
-//Routing manager
-
+RHRouter manager_routing(rf95, CLIENT_ADDRESS); //Creating an instance of the routing manager
 
 void setup() 
 {
@@ -47,6 +45,7 @@ void setup()
 
 
 //----------------------------------------------------------------------------//
+  
   //Initialisation :
   while (!manager_routing.init()){
     while (1);
@@ -60,21 +59,21 @@ void setup()
   //Set the power :
   rf95.setTxPower(20,false);//Our module is using PA_BOOST so we can go up to 20dBm
   //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm
-//----------------------------------------------------------------------------//
-
-
 
 //----------------------------------------------------------------------------//
+  
  //Static Routing table :
   manager_routing.addRouteTo(ROUTER_ADDRESS, ROUTER_ADDRESS);
   manager_routing.addRouteTo(GATEWAY_ADDRESS, ROUTER_ADDRESS);
+  
 //----------------------------------------------------------------------------//
 
 }
 
-
 //----------------------------------------------------------------------------//
-  //Sending the packet
+
+//Sending the packet
+
 void loop(){
 
   uint8_t data[] = "Hello World!"; //Message to send
