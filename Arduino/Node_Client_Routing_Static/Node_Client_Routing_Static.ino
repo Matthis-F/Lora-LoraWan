@@ -1,3 +1,5 @@
+//----------------------------------------------------------------------------//
+
 //Libraries required : 
 #include <RHRouter.h>
 #include <SPI.h>
@@ -107,6 +109,8 @@ void loop(){
   if (res == 0){
     
     Serial.println("Sending OK "); //If the sendtoWait succeed
+    //For more informations about who received the packet
+    //Use the same code that was written in 
     
   }
   else {
