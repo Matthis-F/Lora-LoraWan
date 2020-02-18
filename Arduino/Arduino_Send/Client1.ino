@@ -1,6 +1,8 @@
 //This code is only to send a message to a NODE with and ACK
 //We will call this node CLIENT1
 //The destination is either CLIENT2 or GATEWAY
+//But here, the destination is CLIENT2
+//In fact, it's in order to understand how work the exchange of packets between nodes with LORA
 //This file is also the base file for the routing
 
 //----------------------------------------------------------------------------//
