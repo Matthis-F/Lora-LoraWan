@@ -63,16 +63,12 @@ void setup()
   //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm
 
 //----------------------------------------------------------------------------//
-  
   //Static Routing table :
   //Routing schema:
   // CLIENT_ADDRESS <-> ROUTER_ADDRESS <-> GATEWAY_ADDRESS
   //To join the DESTINATION, we have to pass through the NEXT HOP
   manager_routing.addRouteTo(ROUTER_ADDRESS, ROUTER_ADDRESS); //To join ROUTER_ADDRESS -> next hop : ROUTER_ADDRESS
-  manager_routing.addRouteTo(GATEWAY_ADDRESS, ROUTER_ADDRESS); //To join GATEWAY_ADDRESS -> next hop : ROUTER_ADDRESS
-  //Here to join the GATEWAY_ADDRESS, the packets have to go to the ROUTER_ADDRESS that's know how to join the GATEWAY_ADDRESS
-  //This is the routing : to join the destination, we have to "send" the packet to the next-hop that's could know the route
-  
+  manager_routing.addRouteTo(GATEWAY_ADDRESS, ROUTER_ADDRESS); //To join GATEWAY_ADDRESS -> next hop : ROUTER_ADDRESS  
 //----------------------------------------------------------------------------//
 
 }
@@ -88,14 +84,13 @@ void loop(){
   uint8_t len = sizeof(buf); //Size of the buffer
   
   manager_routing.setTimeout(200); //After each packet or retry the program waits
-  //Between 200ms and 400ms (used to avoid colision
-  //setTimeout(200) is the default value
-  //That means : if you forgot to define it explicitly, the timeout is 200ms 
- 
+  //Between 200ms and 2 times this value (400ms) this behaviour is used to avoid 
+  //colisions. (e.g when 2 Node sends a packet at the same time)
+  //Note that the default value is 200ms
+  
   manager_routing.setRetries(3); //If a messages is not acquired by the recipient
-  //The manager while try 3 times before giving up the packet
-  //setRetries(3) is a default value
-  //That means : if you forgot to define it explicitly, the number of retries is 3  
+  //The manager while try 3 times before giving up sending the packet
+  //3 is the default value.
   
   //Sending the message :
   bool res=(manager_routing.sendtoWait(data, sizeof(data), GATEWAY_ADDRESS)==RH_ROUTER_ERROR_NONE);
@@ -103,7 +98,6 @@ void loop(){
   //But our destination address is "GATEWAY_ADDRESS" and we add "==RH_ROUTER_ERROR_NONE"
   //"==RH_ROUTER_ERROR_NONE" : message was routed and delivered to the next-hop
   //Using the routing table declared above, the packet will be forwarded following the routing table
-  //The packets know where to go to join the destination, here GATEWAY_ADDRESS
   
   //Check the result of the "res"
   if (res == 0){
