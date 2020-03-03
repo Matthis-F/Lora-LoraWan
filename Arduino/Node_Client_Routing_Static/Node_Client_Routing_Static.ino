@@ -1,8 +1,10 @@
 //This code is pretty most like the CLIENT_1 code in the folder "Arduino_Send"
-//But here we add the routing static fonction
-//The packet will go to the second node before joining the gateway
+//But here we add the routing static fonction and the names are change :
+//CLIENT_ADDRESS for CLIENT1_ADDRESS
+//ROUTER_ADDRESS for CLIENT2_ADDRESS
+//The packet will go to the second node ROUTER before joining the gateway
 //Schema : 
-// CLIENT_1 -> CLIENT_2 -> GATEWAY 
+// CLIENT -> ROUTER -> GATEWAY
 
 //----------------------------------------------------------------------------//
 
@@ -23,8 +25,8 @@
 //----------------------------------------------------------------------------//
 
 //Node address definition :
-#define CLIENT1_ADDRESS 100 //This node
-#define CLIENT2_ADDRESS 10 //The other node 
+#define CLIENT_ADDRESS 100 //This node
+#define ROUTER_ADDRESS 10 //The other node
 #define GATEWAY_ADDRESS 1 //The gateway
 
 //----------------------------------------------------------------------------//
@@ -77,7 +79,7 @@ void setup()
 //----------------------------------------------------------------------------//
   //Static Routing table :
   //Routing schema:
-  // CLIENT_1 <-> CLIENT_2 <-> GATEWAY_ADDRESS
+  // CLIENT_1 <-> ROUTER <-> GATEWAY_ADDRESS
   //To join the DESTINATION, we have to pass through the NEXT HOP
   manager_routing.addRouteTo(ROUTER_ADDRESS, ROUTER_ADDRESS); //To join ROUTER_ADDRESS -> next hop : ROUTER_ADDRESS
   manager_routing.addRouteTo(GATEWAY_ADDRESS, ROUTER_ADDRESS); //To join GATEWAY_ADDRESS -> next hop : ROUTER_ADDRESS  
