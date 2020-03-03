@@ -1,3 +1,8 @@
+//This code is pretty most like the CLIENT_1 code in the folder "Arduino_Send"
+//But here we add the routing static fonction
+//The packet will go to the second node before joining the gateway
+//Schema : 
+// CLIENT_1 -> CLIENT_2 -> GATEWAY 
 //----------------------------------------------------------------------------//
 
 //Libraries required : 
@@ -12,23 +17,24 @@
 #define RFM95_CS 8 //Chip select radio pin
 #define RFM95_RST 4 //Reset radio pin
 #define RFM95_INT 7 //GPIO/IRQ radio pin
-
-//----------------------------------------------------------------------------//
-
-#define RF95_FREQ 868.1 //Match EU regulations
+#define RF95_FREQ 868.1 //European frequency's used
 
 //----------------------------------------------------------------------------//
 
 //Node address definition :
-#define CLIENT_ADDRESS 100
-#define ROUTER_ADDRESS 10
-#define GATEWAY_ADDRESS 1
+#define CLIENT1_ADDRESS 100 //This node
+#define CLIENT2_ADDRESS 10 //The other node 
+#define GATEWAY_ADDRESS 1 //The gateway
 
 //----------------------------------------------------------------------------//
 
+//Instances needed :
 RH_RF95 rf95(RFM95_CS, RFM95_INT); //Creating an instance of the RF95 Manager
 RHRouter manager_routing(rf95, CLIENT_ADDRESS); //Creating an instance of the routing manager
 
+//----------------------------------------------------------------------------//
+
+//Arduino's setup :
 void setup() 
 {
 
@@ -39,12 +45,13 @@ void setup()
 
   delay(100); //Waiting for 100 ms
 
-  //Manual reset : s
+//----------------------------------------------------------------------------//
+  
+  //Manual reset :
   digitalWrite(RFM95_RST, LOW);
   delay(10);
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
-
 
 //----------------------------------------------------------------------------//
   
@@ -53,19 +60,23 @@ void setup()
     while (1);
   }
 
+//----------------------------------------------------------------------------//  
+  
   //Set our frequency : 
   if (!rf95.setFrequency(RF95_FREQ)){
     while (1);
   }
 
+//----------------------------------------------------------------------------//  
+  
   //Set the power :
   rf95.setTxPower(20,false);//Our module is using PA_BOOST so we can go up to 20dBm
-  //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm
+  //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm and set "true"
 
 //----------------------------------------------------------------------------//
   //Static Routing table :
   //Routing schema:
-  // CLIENT_ADDRESS <-> ROUTER_ADDRESS <-> GATEWAY_ADDRESS
+  // CLIENT_1 <-> CLIENT_2 <-> GATEWAY_ADDRESS
   //To join the DESTINATION, we have to pass through the NEXT HOP
   manager_routing.addRouteTo(ROUTER_ADDRESS, ROUTER_ADDRESS); //To join ROUTER_ADDRESS -> next hop : ROUTER_ADDRESS
   manager_routing.addRouteTo(GATEWAY_ADDRESS, ROUTER_ADDRESS); //To join GATEWAY_ADDRESS -> next hop : ROUTER_ADDRESS  
@@ -75,7 +86,7 @@ void setup()
 
 //----------------------------------------------------------------------------//
 
-//Sending the packet
+//Code for transmission with ACK :
 
 void loop(){
 
@@ -84,13 +95,14 @@ void loop(){
   uint8_t len = sizeof(buf); //Size of the buffer
   
   manager_routing.setTimeout(200); //After each packet or retry the program waits
-  //Between 200ms and 2 times this value (400ms) this behaviour is used to avoid 
-  //colisions. (e.g when 2 Node sends a packet at the same time)
-  //Note that the default value is 200ms
+  //Between 200ms and 400ms (used to avoid colision)
+  //setTimeout(200) is the default value
+  //That means : if you forgot to define it explicitly, the timeout will be 200ms
   
   manager_routing.setRetries(3); //If a messages is not acquired by the recipient
   //The manager while try 3 times before giving up sending the packet
-  //3 is the default value.
+  //setRetries(3) is a default value
+  //That means : if you forgot to define it explicitly, the number of retries will be 3
   
   //Sending the message :
   bool res=(manager_routing.sendtoWait(data, sizeof(data), GATEWAY_ADDRESS)==RH_ROUTER_ERROR_NONE);
