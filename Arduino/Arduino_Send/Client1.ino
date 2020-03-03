@@ -92,7 +92,7 @@ void loop(){
   uint8_t len = sizeof(buf); //Size of the buffer
   
   manager.setTimeout(200); //After each packet or retry the program waits
-  //Between 200ms and 400ms (used to avoid colision
+  //Between 200ms and 400ms (used to avoid colision)
   //setTimeout(200) is the default value
   //That means : if you forgot to define it explicitly, the timeout is 200ms 
   
