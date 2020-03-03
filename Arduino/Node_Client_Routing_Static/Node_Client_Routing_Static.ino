@@ -25,9 +25,9 @@
 //----------------------------------------------------------------------------//
 
 //Node address definition :
-#define CLIENT_ADDRESS 100 //This node
-#define ROUTER_ADDRESS 10 //The other node
-#define GATEWAY_ADDRESS 1 //The gateway
+#define CLIENT_ADDRESS 100
+#define ROUTER_ADDRESS 10
+#define GATEWAY_ADDRESS 1
 
 //----------------------------------------------------------------------------//
 
