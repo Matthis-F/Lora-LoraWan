@@ -94,12 +94,12 @@ void loop(){
   manager.setTimeout(200); //After each packet or retry the program waits
   //Between 200ms and 400ms (used to avoid colision)
   //setTimeout(200) is the default value
-  //That means : if you forgot to define it explicitly, the timeout is 200ms 
+  //That means : if you forgot to define it explicitly, the timeout will be 200ms 
   
   manager.setRetries(3); //If a messages is not acquired by the recipient
   //The manager while try 3 times before giving up the packet
   //setRetries(3) is a default value
-  //That means : if you forgot to define it explicitly, the number of retries is 3  
+  //That means : if you forgot to define it explicitly, the number of retries will be 3  
   
   //Sending the message :
   bool res=manager.sendtoWait(data, sizeof(data), CLIENT2_ADDRESS);
