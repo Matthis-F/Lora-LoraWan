@@ -1,3 +1,11 @@
+//This code is pretty most like the CLIENT_2 code in the folder "Arduino_Receive"
+//But here we add the routing static fonction and the names are change :
+//CLIENT_ADDRESS for CLIENT1_ADDRESS
+//ROUTER_ADDRESS for CLIENT2_ADDRESS
+//The packet will be received by this node and the node will transmit it to the gateway
+//Schema :
+//CLIENT -> ROUTER -> GATEWAY
+
 //----------------------------------------------------------------------------//
 
 //Libraries required : 
@@ -11,11 +19,8 @@
 //Our RFM95 definition :
 #define RFM95_CS 8 //Chip select radio pin
 #define RFM95_RST 4 //Reset radio pin
-#define RFM95_INT 7 //GPIO/IRQ radio pin
-
-//----------------------------------------------------------------------------//
-
-#define RF95_FREQ 868.1 //Match EU regulations
+#define RFM95_INT 7 //GPIO/IRQ radio pi
+#define RF95_FREQ 868.1 //European frequency's used
 
 //----------------------------------------------------------------------------//
 
@@ -60,7 +65,7 @@ void setup()
 
   //Set the power :
   rf95.setTxPower(20,false);//Our module is using PA_BOOST so we can go up to 20dBm
-  //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm
+  //Unless your radio module can take advantage of PA_BOOST set this value to 13dBm and set "true"
   
 //----------------------------------------------------------------------------//
 
@@ -79,8 +84,8 @@ void setup()
 void loop(){
 
   //Declaration of variables :
-  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN]; //Size of the buffer
-  uint8_t len=sizeof(buf); //Lenght of the buffer
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN]; //Buffer
+  uint8_t len=sizeof(buf); //Size of the buffer
   uint8_t source=manager_routing.headerFrom(); //Returns the FROM header of the last received message
   uint8_t dest=manager_routing.headerTo(); //Returns the TO header of the last received message
   

@@ -1,9 +1,9 @@
 //This code is only to send a message to a NODE with and ACK
-//We will call this node CLIENT1
-//The destination could be either CLIENT2 or GATEWAY
-//But here, the destination is CLIENT2
+//We will call this node CLIENT_1
+//The destination could be either CLIENT_2 or GATEWAY
+//But here, the destination is CLIENT_2
 //In fact, it's in order to understand how work the exchange of packets between nodes with LORA
-//Here, CLIENT1 is sending packets
+//Here, CLIENT_1 is sending packets
 //So we will see how to code the sending
 //This file is also the base file for the routing
 
@@ -92,14 +92,14 @@ void loop(){
   uint8_t len = sizeof(buf); //Size of the buffer
   
   manager.setTimeout(200); //After each packet or retry the program waits
-  //Between 200ms and 400ms (used to avoid colision
+  //Between 200ms and 400ms (used to avoid colision)
   //setTimeout(200) is the default value
-  //That means : if you forgot to define it explicitly, the timeout is 200ms 
+  //That means : if you forgot to define it explicitly, the timeout will be 200ms 
   
   manager.setRetries(3); //If a messages is not acquired by the recipient
   //The manager while try 3 times before giving up the packet
   //setRetries(3) is a default value
-  //That means : if you forgot to define it explicitly, the number of retries is 3  
+  //That means : if you forgot to define it explicitly, the number of retries will be 3  
   
   //Sending the message :
   bool res=manager.sendtoWait(data, sizeof(data), CLIENT2_ADDRESS);
