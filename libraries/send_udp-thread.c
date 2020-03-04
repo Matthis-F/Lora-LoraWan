@@ -18,6 +18,8 @@ struct UpLink{
   int sock_fd;
   struct sockaddr_in server_address;
   char payload[1024];
+  int len;
+
 };
 
 pthread_mutex_t socket_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -47,16 +49,7 @@ void * downlinkHandler(void * arg){
     if(data_len < 0){
       printf("Error while receiving data %d\n",data_len);
     }
-
-    #ifdef DEBUG
-    //Printing the data
-    for (int i = 0; i < data_len; i++) {
-      printf("%X ",buffer[i]);
-      fflush(stdout);
-    }
-    printf("\n");
-    #endif
-
+  
 
     pthread_mutex_lock(&downlink_work_lock);
 
@@ -102,11 +95,14 @@ void * uplinkHandler(void *arg){
 
     //-------------------------------------------------------------//
     //Step 1:
-    //Getting th payload from the buffer
+    //Getting the payload and its size
     char *payload = up->payload;
+    int len = up->len;
     //-------------------------------------------------------------//
 
-
+    #ifdef DEBUG
+      printf("%s\n",up->payload+13);
+    #endif
 
     //-------------------------------------------------------------//
     //Relasing the mutex for the payload buffer
@@ -117,12 +113,8 @@ void * uplinkHandler(void *arg){
     //-------------------------------------------------------------//
     //Step 2:
     //Sending the data to the Server
-    int send = sendto(sock_fd,payload,strlen(payload),0,(struct sockaddr*)&server_address,sizeof(server_address));
+    int send = sendto(sock_fd,payload,len,0,(struct sockaddr*)&server_address,sizeof(server_address));
     //-------------------------------------------------------------//
-
-
-
-    printf("%s\n",up->payload);
 
 
     //-------------------------------------------------------------//
