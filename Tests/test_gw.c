@@ -5,13 +5,6 @@
 #include "../libraries/LoraWanPkt.h"
 #include "../Gateway/send_udp.c"
 
-void my_delay(int i)    /*Pause l'application pour i seconds*/
-{
-    clock_t start,end;
-    start=clock();
-    while(((end=clock())-start)<=i*CLOCKS_PER_SEC);
-}
-
 int main(void){
   while(1){
   //Setting up virtual node parameters
@@ -20,9 +13,9 @@ int main(void){
   uint8_t AppSKey1[16] = { 0x25, 0xD8, 0x64, 0xE2, 0x57, 0x8F, 0xEB, 0x8D, 0x17, 0xEB, 0xBC, 0x59, 0xB0, 0x4C, 0x3C, 0xED };
   uint16_t FrameCount1 = 0x0000;
   uint8_t dir1 = 0;
-  char data[]= "test";
+  char data[50];
   //Asking the user to enter the payload content
-  //scanf("%s",(char*)&data);
+  scanf("%s",(char*)&data);
 
 
   struct LoraWan param;
@@ -39,14 +32,20 @@ int main(void){
 //building the packet by giving the buildLoraWanPkt a frame struct containing
 //informations about the virtual end-node
 //the function return a buffer (pkt) with the complete packet (base64 format)
-  printf("size of data %ld\n",(((strlen(data)+13) + ( ((strlen(data)+13) % 3) ? (3 - ((strlen(data)+13) % 3)) : 0) ) / 3) * 4 );
   uint8_t pkt[256];
 
-  int complete_pkt_len = buildLoraWanPkt(param,data,pkt);
+  int complete_pkt_len = buildLoraWanPkt(param,(uint8_t*)data,pkt);
   printf("[test_LoraWanPkt]:Final Packet %s\n",pkt);
   printf("actual size of data %d \n",(int)strlen((char*)pkt));
-  struct message msg = build_udp_packet(2,pkt);
+  struct message msg = build_udp_packet(0,pkt);
+
+  for (size_t i = 0; i < 13; i++) {
+    printf("%X ", (unsigned int)msg.complete_msg[i]);
+  }
+  printf("\n");
+  printf("%s\n",msg.complete_msg+13);
+
+
   send_UDP(msg.complete_msg,msg.size);
-  my_delay(1);
   }
 }
