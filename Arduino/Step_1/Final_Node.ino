@@ -60,7 +60,7 @@ void loop(){
   //Temperature in Celsius
   float t = dht.readTemperature();
 
-  //Check if the lecture fails, if yes we try again
+  //Check if the reading fails, if yes we try again
   if (isnan(t)){
    Serial.println("Failed to read from DHT sensor!");
    return;
