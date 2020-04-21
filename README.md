@@ -84,6 +84,7 @@ To be able to send and receive packets RadioHead provides a Driver and a manager
 The driver is specific to the LoRa module, since we are using the HopeRF RFM95 module in our project we used the RH_RF95 driver.
 The manager is always the same, it enables routing and adressed packets (and much more if you want !)
 
+### How packets are sent on Lora Modulation ?
 Here's how RadioHead format a packet before sending it :
 
               Header                   
