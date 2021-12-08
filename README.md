@@ -119,6 +119,8 @@ __End Nodes (Arduinos) must be configured correcly__
 # How to install it ?
 
 ## __Using the setup script__ 
+### /!\ Deprecated, Please refer to the manual installation
+
 
 First you will need to clone this repo :
 
@@ -185,28 +187,7 @@ Then install the Gateway by executing the setup script inside the Lora-LoraWAN f
     sudo su
     echo "dtoverlay=gpio-no-irq" >> /boot/config.txt
   
-# How to configure it ?
 
-  Once you have installed the gateway you will need to configure it
-  
-  There is a configuration file named __config.gw__ in the Gateway folder of the project
-  
-  Use this file to configure :
-  
-    - Your Lora module pins
-    - Radio Frequency Setting to match your local regulation
-    - Radio Power Setting to match your local regulation
-    - LoraWAN Server(s)
-    - Routes for accessing Nodes
-
-  Default values are working with [this](https://www.tindie.com/products/m2m/1-channel-lorawan-gateway-shield-for-raspberry-pi4/) sheild
-  and match France Regulations
-  
-  __If you are not located in France check what frequency and power value you are allowed to use before using the Gateway__
-  
-  If your module can take advantage of PA_BOOST you can set the Power value up to 23dBm max if not the maximum uis 14dBm
-  
-  
 # How to use it ?
 
 To start the gateway server just launch the rf95_server script :
